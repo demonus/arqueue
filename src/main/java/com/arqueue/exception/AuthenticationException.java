@@ -1,4 +1,4 @@
-package com.rackspace.connect.exception;
+package com.arqueue.exception;
 
 /**
  * Created by root on 10/14/15.

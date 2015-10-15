@@ -1,4 +1,4 @@
-package com.rackspace.connect.api.beans;
+package com.arqueue.api.beans;
 
 /**
  * Created by root on 10/14/15.

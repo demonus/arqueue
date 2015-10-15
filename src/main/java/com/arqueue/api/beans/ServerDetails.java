@@ -1,6 +1,5 @@
-package com.rackspace.connect.api.beans;
+package com.arqueue.api.beans;
 
-import javax.xml.bind.annotation.XmlElement;
 import java.util.Map;
 
 /**

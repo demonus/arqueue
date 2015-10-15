@@ -1,9 +1,9 @@
-package com.rackspace.connect.client;
+package com.arqueue.client;
 
-import com.rackspace.connect.api.RackspaceConnect;
-import com.rackspace.connect.api.beans.ServerDetails;
-import com.rackspace.connect.api.beans.ServerDetailsArray;
-import com.rackspace.connect.exception.AuthenticationException;
+import com.arqueue.api.RackspaceConnect;
+import com.arqueue.api.beans.ServerDetails;
+import com.arqueue.api.beans.ServerDetailsArray;
+import com.arqueue.exception.AuthenticationException;
 
 /**
  * Created by root on 10/14/15.

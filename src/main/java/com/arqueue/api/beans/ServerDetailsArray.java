@@ -1,6 +1,4 @@
-package com.rackspace.connect.api.beans;
-
-import javax.xml.bind.annotation.XmlElement;
+package com.arqueue.api.beans;
 
 /**
  * Created by root on 10/14/15.

@@ -1,10 +1,9 @@
-package com.rackspace.connect.api;
+package com.arqueue.api;
 
+import com.arqueue.api.beans.ServerDetailsArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.rackspace.connect.api.beans.ServerDetails;
-import com.rackspace.connect.api.beans.ServerDetailsArray;
-import com.rackspace.connect.exception.AuthenticationException;
+import com.arqueue.exception.AuthenticationException;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;
@@ -13,7 +12,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Map;
 
 /**
  * Created by root on 10/14/15.
@@ -92,7 +90,8 @@ public class RackspaceConnect
 				client.target("https://servers.api.rackspacecloud.com").path("v1.0").path(account).path("servers")
 						.path("detail");
 
-		serverDetailsArray = target.request(MediaType.APPLICATION_JSON_TYPE).header("X-Auth-Token", token).get(ServerDetailsArray.class);
+		serverDetailsArray = target.request(MediaType.APPLICATION_JSON_TYPE).header("X-Auth-Token", token).get(
+				ServerDetailsArray.class);
 
 		return serverDetailsArray;
 	}
