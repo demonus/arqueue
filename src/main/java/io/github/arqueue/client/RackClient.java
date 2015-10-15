@@ -1,9 +1,9 @@
-package com.arqueue.client;
+package io.github.arqueue.client;
 
-import com.arqueue.api.RackspaceConnect;
-import com.arqueue.api.beans.ServerDetails;
-import com.arqueue.api.beans.ServerDetailsArray;
-import com.arqueue.exception.AuthenticationException;
+import io.github.arqueue.api.RackspaceConnect;
+import io.github.arqueue.api.beans.ServerDetails;
+import io.github.arqueue.api.beans.ServerDetailsArray;
+import io.github.arqueue.exception.AuthenticationException;
 
 /**
  * Created by root on 10/14/15.

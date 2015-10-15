@@ -1,9 +1,9 @@
-package com.arqueue.api;
+package io.github.arqueue.api;
 
-import com.arqueue.api.beans.ServerDetailsArray;
+import io.github.arqueue.api.beans.ServerDetailsArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.arqueue.exception.AuthenticationException;
+import io.github.arqueue.exception.AuthenticationException;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.client.Client;

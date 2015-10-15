@@ -1,4 +1,4 @@
-package com.arqueue.exception;
+package io.github.arqueue.exception;
 
 /**
  * Created by root on 10/14/15.

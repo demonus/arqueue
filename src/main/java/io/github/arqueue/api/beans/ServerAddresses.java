@@ -1,4 +1,4 @@
-package com.arqueue.api.beans;
+package io.github.arqueue.api.beans;
 
 import javax.xml.bind.annotation.XmlElement;
 

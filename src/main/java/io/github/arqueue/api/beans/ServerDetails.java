@@ -1,4 +1,4 @@
-package com.arqueue.api.beans;
+package io.github.arqueue.api.beans;
 
 import java.util.Map;
 

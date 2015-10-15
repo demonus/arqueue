@@ -1,4 +1,4 @@
-package com.arqueue.api.beans;
+package io.github.arqueue.api.beans;
 
 /**
  * Created by root on 10/14/15.
