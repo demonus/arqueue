@@ -1,4 +1,4 @@
-package io.github.arqueue.core.tasks;
+package io.github.arqueue.core.runners;
 
 import io.github.arqueue.common.Result;
 
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Created by root on 10/16/15.
  */
-public class Task implements Future<Result>
+public class Runner implements Future<Result>
 {
 	@Override
 	public boolean cancel(boolean mayInterruptIfRunning)
