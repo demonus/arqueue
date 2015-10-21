@@ -1,7 +1,5 @@
 package io.github.arqueue.hibernate;
 
-import io.github.arqueue.common.Environment;
-import io.github.arqueue.hibernate.beans.Flow;
 import org.hibernate.Cache;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;

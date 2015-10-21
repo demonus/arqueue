@@ -24,53 +24,83 @@ public class RackClient
 
 		Session session = sessionFactory.openSession();
 
-		System.out.println("Session is open");
+		try
+		{
 
-		session.beginTransaction();
+			System.out.println("Session is open");
 
-		Flow flow = new Flow();
+			session.beginTransaction();
 
-		flow.setName("Test flow");
-		flow.setStatus(Flow.Status.PENDING);
-		flow.setToken("134567890");
+			Flow flow = new Flow();
 
-		session.save(flow);
+			flow.setName("Test flow");
+			flow.setStatus(Flow.Status.PENDING);
+			flow.setToken("134567890");
 
-		Action action = new Action();
+			session.save(flow);
 
-		action.setFlow(flow);
+			Action action = new Action();
 
-		action.setParallelMax(3);
+			action.setFlow(flow);
 
-		flow.getActions().add(action);
+			action.setParallelMax(3);
 
-		session.save(action);
+			flow.getActions().add(action);
 
-		Task task = new Task();
+			session.save(action);
 
-		task.setAction(action);
+			Task task = new Task();
 
-		task.setData("{ \"id\": \"2345678\"}");
+			task.setAction(action);
 
-		task.setStatus(Flow.Status.NEW);
+			task.setData("{ \"id\": \"2345678\"}");
 
-		action.getTasks().add(task);
+			task.setStatus(Flow.Status.NEW);
 
-		session.save(task);
+			action.getTasks().add(task);
 
-		Task task2 = new Task();
+			session.save(task);
 
-		task2.setAction(action);
+			Action action2 = new Action();
 
-		task2.setData("{ \"id\": \"aaaaaaaaaaa\"}");
+			action2.setFlow(flow);
 
-		task2.setStatus(Flow.Status.IN_PROGRESS);
+			action2.setParallelMax(20);
 
-		action.getTasks().add(task2);
+			flow.getActions().add(action2);
 
-		session.save(task2);
+			session.save(action2);
 
-		session.getTransaction().commit();
+			Task task2 = new Task();
+
+			task2.setAction(action);
+
+			task2.setData("{ \"id\": \"aaaaaaaaaaa\"}");
+
+			task2.setStatus(Flow.Status.IN_PROGRESS);
+
+			action.getTasks().add(task2);
+
+			session.save(task2);
+
+			session.getTransaction().commit();
+
+			session = sessionFactory.openSession();
+
+			Flow fl = session.get(Flow.class, "ff80818150834fea0150834fedf70000");
+
+			for (Action a : fl.getActions())
+			{
+				System.out.println(a.getOrderNumber() + " : " + a.getId());
+			}
+
+			session.close();
+		}
+		finally
+		{
+
+			sessionFactory.close();
+		}
 
 		System.out.println("Session is closed");
 

@@ -1,5 +1,6 @@
 package io.github.arqueue.hibernate.beans;
 
+import io.github.arqueue.hibernate.beans.helpers.CountableList;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -10,8 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by root on 10/19/15.
@@ -80,12 +80,12 @@ public class Flow
 	}
 
 	@OneToMany(mappedBy = "flow")
-	public Set<Action> getActions()
+	public List<Action> getActions()
 	{
 		return actions;
 	}
 
-	public void setActions(Set<Action> actions)
+	public void setActions(List<Action> actions)
 	{
 		this.actions = actions;
 	}
@@ -96,5 +96,5 @@ public class Flow
 
 	private Status status;
 
-	private Set<Action> actions = new HashSet<>(0);
+	private List<Action> actions = new CountableList<>();
 }
