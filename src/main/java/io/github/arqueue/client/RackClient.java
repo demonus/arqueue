@@ -1,6 +1,9 @@
 package io.github.arqueue.client;
 
 import io.github.arqueue.api.RackspaceConnect;
+import io.github.arqueue.api.beans.ServerDetails;
+import io.github.arqueue.api.beans.ServerDetailsArray;
+import io.github.arqueue.api.jcloud.InstanceGenerator;
 import io.github.arqueue.exception.AuthenticationException;
 import io.github.arqueue.hibernate.SessionFactory;
 import io.github.arqueue.hibernate.beans.Action;
@@ -8,19 +11,24 @@ import io.github.arqueue.hibernate.beans.Flow;
 import io.github.arqueue.hibernate.beans.Task;
 import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Session;
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.domain.Image;
+import org.jclouds.openstack.nova.v2_0.NovaApi;
+
+import java.util.Set;
 
 /**
  * Created by root on 10/14/15.
  */
 public class RackClient
 {
-	public static void main(String[] args) throws AuthenticationException
+	public static void main(String[] args) throws AuthenticationException, InterruptedException
 	{
 		PropertyConfigurator.configure("./conf/log4j.properties");
 
 		RackspaceConnect rackConnect = new RackspaceConnect();
 
-		SessionFactory sessionFactory = SessionFactory.getInstance();
+/*		SessionFactory sessionFactory = SessionFactory.getInstance();
 
 		Session session = sessionFactory.openSession();
 
@@ -102,15 +110,50 @@ public class RackClient
 			sessionFactory.close();
 		}
 
-		System.out.println("Session is closed");
+		System.out.println("Session is closed");*/
 
-		/*rackConnect.login("longjump", args[0]);
+		long time1 = System.currentTimeMillis();
 
-		ServerDetailsArray serverDetailsArray = rackConnect.getServerDetails();
+		InstanceGenerator instanceGenerator = new InstanceGenerator("longjump", args[0]);
 
-		for (ServerDetails serverDetails : serverDetailsArray.getServers())
+		System.out.println(System.currentTimeMillis() - time1);
+
+		time1 = System.currentTimeMillis();
+
+		NovaApi novaApi = instanceGenerator.getNovaApiInstance();
+
+		System.out.println(System.currentTimeMillis() - time1);
+
+		Thread.currentThread().sleep(4000);
+
+		time1 = System.currentTimeMillis();
+
+		NovaApi novaApi2 = instanceGenerator.getNovaApiInstance();
+
+		System.out.println(System.currentTimeMillis() - time1);
+
+		Thread.currentThread().sleep(4000);
+
+		time1 = System.currentTimeMillis();
+
+		ComputeService computeService = instanceGenerator.getComputeService();
+
+		System.out.println(System.currentTimeMillis() - time1);
+
+		time1 = System.currentTimeMillis();
+
+		/*ComputeService computeService = instanceGenerator.getComputeService();
+
+		Set<? extends Image> images = computeService.listImages();
+
+
+		for (Image image : images)
 		{
-			System.out.println(serverDetails.getId() + " " + serverDetails.getName());
+			if ("snapshot".equals(image.getUserMetadata().get("image_type")))
+			{
+				System.out.println(image.getName() + " : " + image.getUserMetadata().get("image_type") + " : " +
+						image.getProviderId() + " : " + image.getTags());
+			}
 		}*/
 	}
 }

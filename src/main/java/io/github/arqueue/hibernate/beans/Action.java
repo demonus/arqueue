@@ -33,7 +33,7 @@ public class Action implements Countable
 
 	private Integer orderNumber;
 
-	@Column(precision = 0, nullable = true)
+	@Column(precision = 0, nullable = true, name = "order_number")
 	public Integer getOrderNumber()
 	{
 		return orderNumber;
@@ -60,7 +60,7 @@ public class Action implements Countable
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "flow_id", nullable = false)
-	@OrderBy("orderNumber")
+	@OrderBy("order_number")
 	public Flow getFlow()
 	{
 		return flow;
