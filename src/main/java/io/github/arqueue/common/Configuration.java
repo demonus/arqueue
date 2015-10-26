@@ -81,6 +81,11 @@ public class Configuration
 		return properties.getProperty("instance-id");
 	}
 
+	public String getEncryptionKey()
+	{
+		return properties.getProperty("encryption-key", "d3Fqu1TqU3281cK37");
+	}
+
 	public int getMaxParalllelJobs()
 	{
 		return Integer.parseInt(properties.getProperty("max-parallel-jobs", "10"));

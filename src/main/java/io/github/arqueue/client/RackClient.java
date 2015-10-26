@@ -9,6 +9,7 @@ import io.github.arqueue.hibernate.SessionFactory;
 import io.github.arqueue.hibernate.beans.Action;
 import io.github.arqueue.hibernate.beans.Flow;
 import io.github.arqueue.hibernate.beans.Task;
+import io.github.arqueue.hibernate.beans.User;
 import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Session;
 import org.jclouds.compute.ComputeService;
@@ -28,132 +29,32 @@ public class RackClient
 
 		RackspaceConnect rackConnect = new RackspaceConnect();
 
-/*		SessionFactory sessionFactory = SessionFactory.getInstance();
+		User user = new User();
+
+		SessionFactory sessionFactory = SessionFactory.getInstance();
 
 		Session session = sessionFactory.openSession();
 
 		try
 		{
-
-			System.out.println("Session is open");
-
 			session.beginTransaction();
 
-			Flow flow = new Flow();
+			user.setUsername("arqueue");
+			user.setApiKey(args[0]);
 
-			flow.setName("Test flow");
-			flow.setStatus(Flow.Status.PENDING);
-			flow.setToken("134567890");
-
-			session.save(flow);
-
-			Action action = new Action();
-
-			action.setFlow(flow);
-
-			action.setParallelMax(3);
-
-			flow.getActions().add(action);
-
-			session.save(action);
-
-			Task task = new Task();
-
-			task.setAction(action);
-
-			task.setData("{ \"id\": \"2345678\"}");
-
-			task.setStatus(Flow.Status.NEW);
-
-			action.getTasks().add(task);
-
-			session.save(task);
-
-			Action action2 = new Action();
-
-			action2.setFlow(flow);
-
-			action2.setParallelMax(20);
-
-			flow.getActions().add(action2);
-
-			session.save(action2);
-
-			Task task2 = new Task();
-
-			task2.setAction(action);
-
-			task2.setData("{ \"id\": \"aaaaaaaaaaa\"}");
-
-			task2.setStatus(Flow.Status.IN_PROGRESS);
-
-			action.getTasks().add(task2);
-
-			session.save(task2);
+			session.save(user);
 
 			session.getTransaction().commit();
 
-			session = sessionFactory.openSession();
+			User user2 = session.load(User.class, "ff80818150a63c750150a63c78810000");
 
-			Flow fl = session.get(Flow.class, "ff80818150834fea0150834fedf70000");
-
-			for (Action a : fl.getActions())
-			{
-				System.out.println(a.getOrderNumber() + " : " + a.getId());
-			}
-
-			session.close();
+			System.out.println(user2.getApiKey());
 		}
 		finally
 		{
+			session.close();
 
 			sessionFactory.close();
 		}
-
-		System.out.println("Session is closed");*/
-
-		long time1 = System.currentTimeMillis();
-
-		InstanceGenerator instanceGenerator = new InstanceGenerator("longjump", args[0]);
-
-		System.out.println(System.currentTimeMillis() - time1);
-
-		time1 = System.currentTimeMillis();
-
-		NovaApi novaApi = instanceGenerator.getNovaApiInstance();
-
-		System.out.println(System.currentTimeMillis() - time1);
-
-		Thread.currentThread().sleep(4000);
-
-		time1 = System.currentTimeMillis();
-
-		NovaApi novaApi2 = instanceGenerator.getNovaApiInstance();
-
-		System.out.println(System.currentTimeMillis() - time1);
-
-		Thread.currentThread().sleep(4000);
-
-		time1 = System.currentTimeMillis();
-
-		ComputeService computeService = instanceGenerator.getComputeService();
-
-		System.out.println(System.currentTimeMillis() - time1);
-
-		time1 = System.currentTimeMillis();
-
-		/*ComputeService computeService = instanceGenerator.getComputeService();
-
-		Set<? extends Image> images = computeService.listImages();
-
-
-		for (Image image : images)
-		{
-			if ("snapshot".equals(image.getUserMetadata().get("image_type")))
-			{
-				System.out.println(image.getName() + " : " + image.getUserMetadata().get("image_type") + " : " +
-						image.getProviderId() + " : " + image.getTags());
-			}
-		}*/
 	}
 }

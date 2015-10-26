@@ -55,6 +55,7 @@ public class SessionFactory
 		configuration.addAnnotatedClass(io.github.arqueue.hibernate.beans.Flow.class);
 		configuration.addAnnotatedClass(io.github.arqueue.hibernate.beans.Action.class);
 		configuration.addAnnotatedClass(io.github.arqueue.hibernate.beans.Task.class);
+		configuration.addAnnotatedClass(io.github.arqueue.hibernate.beans.User.class);
 
 		StandardServiceRegistryBuilder serviceRegistryBuilder =
 				new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
