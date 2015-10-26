@@ -1,7 +1,6 @@
 package io.github.arqueue.common;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -13,9 +12,6 @@ public class Utils
 {
 	private static Logger logger = Logger.getLogger(Utils.class);
 
-	static {
-		PropertyConfigurator.configure("./conf/log4j.properties");
-	}
 
 	public static void closeResources(Object... resources)
 	{

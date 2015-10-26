@@ -3,6 +3,7 @@ package io.github.arqueue.common;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -23,7 +24,7 @@ public class Configuration
 			properties = Properties.load("./conf/server.conf");
 
 			String instanceId = properties.getProperty("instance-id");
-			String mysqlPassword = properties.getProperty("mysql-password", "");
+			String mysqlPassword = properties.getProperty("hibernate.connection.password", "");
 
 			boolean save = false;
 
@@ -38,7 +39,7 @@ public class Configuration
 
 			if ("true".equalsIgnoreCase(properties.getProperty("protect-passwords", "false")))
 			{
-				properties.setProperty("mysql-password", "");
+				properties.setProperty("hibernate.connection.password", "");
 
 				save = true;
 			}
@@ -47,7 +48,7 @@ public class Configuration
 			{
 				properties.save();
 
-				properties.setProperty("mysql-password", mysqlPassword);
+				properties.setProperty("hibernate.connection.password", mysqlPassword);
 			}
 		}
 		catch (IOException ioEx)
@@ -80,6 +81,11 @@ public class Configuration
 		return properties.getProperty("instance-id");
 	}
 
+	public String getEncryptionKey()
+	{
+		return properties.getProperty("encryption-key", "d3Fqu1TqU3281cK37");
+	}
+
 	public int getMaxParalllelJobs()
 	{
 		return Integer.parseInt(properties.getProperty("max-parallel-jobs", "10"));
@@ -95,38 +101,26 @@ public class Configuration
 		return Integer.parseInt(properties.getProperty("max-thread-count", "10"));
 	}
 
-	public String getDatabaseConnectionString()
-	{
-		return properties.getProperty("mysql-connection-string");
-	}
-
-	public String getDatabaseUser()
-	{
-		return properties.getProperty("mysql-user");
-	}
-
-	public String getDatabasePassword()
-	{
-		return properties.getProperty("mysql-password");
-	}
-
-	public int getConnectionPoolMinIdle()
-	{
-		return Integer.parseInt(properties.getProperty("mysql-min-idle-connections", "10"));
-	}
-
-	public int getConnectionPoolMax()
-	{
-		return Integer.parseInt(properties.getProperty("mysql-max-connections", "50"));
-	}
-
-	public String getConnectionPoolTestQuery()
-	{
-		return properties.getProperty("mysql-test-query");
-	}
-
 	public int getSchedulerCheckInterval()
 	{
 		return Integer.parseInt(properties.getProperty("check-interval-seconds", "10")) * 1000;
+	}
+
+	public Properties getSubset(String prefix)
+	{
+		Properties res = new Properties();
+
+		for (Map.Entry<Object, Object> entry : properties.entrySet())
+		{
+			String key = entry.getKey().toString();
+
+			if (key != null && prefix != null && key.length() >= prefix.length() &&
+					key.substring(0, prefix.length()).equalsIgnoreCase(prefix))
+			{
+				res.setProperty(key, entry.getValue().toString());
+			}
+		}
+
+		return res;
 	}
 }
