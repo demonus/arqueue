@@ -7,7 +7,10 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by root on 10/26/15.
@@ -22,6 +25,8 @@ public class User
 	private String username;
 
 	private String apiKey;
+
+	private List<Flow> flows = new ArrayList<>();
 
 	@Id
 	@GeneratedValue(generator = "uuid")
@@ -58,5 +63,16 @@ public class User
 	public void setApiKey(String apiKey)
 	{
 		this.apiKey = apiKey;
+	}
+
+	@OneToMany(mappedBy = "user")
+	public List<Flow> getFlows()
+	{
+		return flows;
+	}
+
+	public void setFlows(List<Flow> flows)
+	{
+		this.flows = flows;
 	}
 }

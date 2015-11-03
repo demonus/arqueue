@@ -13,6 +13,7 @@ import io.github.arqueue.hibernate.beans.User;
 import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Session;
 import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.domain.Hardware;
 import org.jclouds.compute.domain.Image;
 import org.jclouds.openstack.nova.v2_0.NovaApi;
 
@@ -29,32 +30,10 @@ public class RackClient
 
 		RackspaceConnect rackConnect = new RackspaceConnect();
 
-		User user = new User();
+		InstanceGenerator instanceGenerator = new InstanceGenerator("longjump", args[0]);
 
-		SessionFactory sessionFactory = SessionFactory.getInstance();
+		ComputeService computeService = instanceGenerator.getComputeService();
 
-		Session session = sessionFactory.openSession();
 
-		try
-		{
-			session.beginTransaction();
-
-			user.setUsername("arqueue");
-			user.setApiKey(args[0]);
-
-			session.save(user);
-
-			session.getTransaction().commit();
-
-			User user2 = session.load(User.class, "ff80818150a63c750150a63c78810000");
-
-			System.out.println(user2.getApiKey());
-		}
-		finally
-		{
-			session.close();
-
-			sessionFactory.close();
-		}
 	}
 }

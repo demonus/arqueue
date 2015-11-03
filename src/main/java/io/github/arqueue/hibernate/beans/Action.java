@@ -5,6 +5,8 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -32,6 +34,8 @@ public class Action implements Countable
 	private Set<Task> tasks = new HashSet<>(0);
 
 	private Integer orderNumber;
+
+	private Flow.Status status;
 
 	@Column(precision = 0, nullable = true, name = "order_number")
 	public Integer getOrderNumber()
@@ -91,5 +95,17 @@ public class Action implements Countable
 	public void setTasks(Set<Task> tasks)
 	{
 		this.tasks = tasks;
+	}
+
+	@Column(length = 50)
+	@Enumerated(EnumType.STRING)
+	public Flow.Status getStatus()
+	{
+		return status;
+	}
+
+	public void setStatus(Flow.Status status)
+	{
+		this.status = status;
 	}
 }
