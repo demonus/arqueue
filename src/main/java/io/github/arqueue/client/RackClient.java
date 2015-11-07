@@ -4,7 +4,9 @@ import io.github.arqueue.api.RackspaceConnect;
 import io.github.arqueue.api.beans.ServerDetails;
 import io.github.arqueue.api.beans.ServerDetailsArray;
 import io.github.arqueue.api.jcloud.InstanceGenerator;
+import io.github.arqueue.api.jcloud.StaticDataCache;
 import io.github.arqueue.exception.AuthenticationException;
+import io.github.arqueue.exception.CacheException;
 import io.github.arqueue.hibernate.SessionFactory;
 import io.github.arqueue.hibernate.beans.Action;
 import io.github.arqueue.hibernate.beans.Flow;
@@ -23,38 +25,18 @@ import java.util.Set;
  */
 public class RackClient
 {
-	public static void main(String[] args) throws AuthenticationException, InterruptedException
+	public static void main(String[] args) throws AuthenticationException, InterruptedException, CacheException
 	{
 		PropertyConfigurator.configure("./conf/log4j.properties");
 
 		RackspaceConnect rackConnect = new RackspaceConnect();
 
-		User user = new User();
+		StaticDataCache cache = new StaticDataCache(10, 300);
 
-		SessionFactory sessionFactory = SessionFactory.getInstance();
+		cache.addToCache("longjump", rackConnect);
 
-		Session session = sessionFactory.openSession();
+		RackspaceConnect rackspaceConnect = cache.getFromCache("longjump");
 
-		try
-		{
-			session.beginTransaction();
-
-			user.setUsername("arqueue");
-			user.setApiKey(args[0]);
-
-			session.save(user);
-
-			session.getTransaction().commit();
-
-			User user2 = session.load(User.class, "ff80818150a63c750150a63c78810000");
-
-			System.out.println(user2.getApiKey());
-		}
-		finally
-		{
-			session.close();
-
-			sessionFactory.close();
-		}
+		System.out.println(rackspaceConnect);
 	}
 }

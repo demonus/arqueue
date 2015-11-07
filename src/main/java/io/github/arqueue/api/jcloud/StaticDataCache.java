@@ -1,6 +1,7 @@
 package io.github.arqueue.api.jcloud;
 
 import io.github.arqueue.common.KeyValuePair;
+import io.github.arqueue.exception.CacheException;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
@@ -10,30 +11,35 @@ import java.util.Map;
 /**
  * Created by root on 10/23/15.
  */
-class TokenCache
+public class StaticDataCache
 {
 	private static final int DEFAULT_CAPACITY = 300;
 
-	private static final long DEFAULT_EXPIRATION_SECONDS = 24 * 60 * 60;
-
-	private static Logger logger = Logger.getLogger(TokenCache.class);
+	private static Logger logger = Logger.getLogger(StaticDataCache.class);
 
 	private CacheNode first = null;
 
 	private CacheNode last = null;
 
-	private Map<String, KeyValuePair<String, CacheNode>> cacheIndex = new HashMap<>();
+	private Map<String, CacheNode> cacheIndex = new HashMap<>();
 
-	private long expirationSeconds;
+	private Long lifetime;
 
 	private int capacity;
 
-	public TokenCache(int capacity)
+	public StaticDataCache(int capacity)
 	{
 		this.capacity = capacity;
+		this.lifetime = null;
 	}
 
-	public TokenCache()
+	public StaticDataCache(int capacity, long lifetime)
+	{
+		this.capacity = capacity;
+		this.lifetime = lifetime;
+	}
+
+	public StaticDataCache()
 	{
 		this(DEFAULT_CAPACITY);
 	}
@@ -48,9 +54,14 @@ class TokenCache
 		this.capacity = capacity;
 	}
 
-	public void addToCache(String username, String password, String token) throws Exception
+	public <T> void addToCache(String key, T object) throws CacheException
 	{
-		if (!cacheIndex.containsKey(username))
+		addToCache(key, object, this.lifetime);
+	}
+
+	public <T> void addToCache(String key, T object, Long lifetime) throws CacheException
+	{
+		if (!cacheIndex.containsKey(key))
 		{
 			if (cacheIndex.size() == capacity)
 			{
@@ -62,47 +73,53 @@ class TokenCache
 				}
 				else
 				{
-					throw new Exception("Cache consistency problem " + capacity);
+					throw new CacheException("Cache consistency problem " + capacity);
 				}
 			}
 
-			CacheNode<String> node = new CacheNode<>(username, token);
+			CacheNode<T> node = new CacheNode<>(key, object, lifetime);
 
 			addNode(node);
 
-			cacheIndex.put(username, new KeyValuePair<>(password, node));
+			cacheIndex.put(key, node);
 		}
 		else
 		{
-			KeyValuePair<String, CacheNode> nodePair = cacheIndex.get(username);
-
-			if (nodePair != null)
-			{
-				CacheNode<String> node = nodePair.getValue();
-
-				if (node != null)
-				{
-					pop(node);
-
-					node.setValue(token);
-
-					cacheIndex.put(username, nodePair);
-				}
-			}
-		}
-	}
-
-	public String getFromCache(String key)
-	{
-		if (cacheIndex.containsKey(key))
-		{
-			CacheNode<String> node = cacheIndex.get(key).getValue();
+			CacheNode<T> node = cacheIndex.get(key);
 
 			if (node != null)
 			{
 				pop(node);
 
-				return node.getValue();
+				node.setValue(object);
+
+				node.setLifeTime(lifetime);
+
+				cacheIndex.put(key, node);
+			}
+		}
+	}
+
+	public <T> T getFromCache(String key)
+	{
+		if (cacheIndex.containsKey(key))
+		{
+			CacheNode<T> node = cacheIndex.get(key);
+
+			if (node != null)
+			{
+				if (!node.isExpired())
+				{
+					pop(node);
+
+					return node.getValue();
+				}
+				else
+				{
+					deleteNode(node);
+
+					return null;
+				}
 			}
 			else
 			{
@@ -119,7 +136,7 @@ class TokenCache
 	{
 		if (cacheIndex.containsKey(key))
 		{
-			CacheNode<String> node = cacheIndex.get(key).getValue();
+			CacheNode node = cacheIndex.get(key);
 
 			if (node != null)
 			{
@@ -213,19 +230,26 @@ class TokenCache
 
 		private CacheNode next;
 
-		private Date expirationDate;
+		private Long expirationTime;
 
-		public CacheNode(String key, T value, CacheNode prev, CacheNode next)
+		public CacheNode(String key, T value, CacheNode prev, CacheNode next, Long lifetime)
 		{
 			this.key = key;
 			this.value = value;
 			this.prev = prev;
 			this.next = next;
+
+			setLifeTime(lifetime);
 		}
 
 		public CacheNode(String key, T value)
 		{
-			this(key, value, null, null);
+			this(key, value, null, null, null);
+		}
+
+		public CacheNode(String key, T value, Long lifetime)
+		{
+			this(key, value, null, null, lifetime);
 		}
 
 		public T getValue()
@@ -270,17 +294,32 @@ class TokenCache
 
 		public Date getExpirationDate()
 		{
-			return expirationDate;
+			return new Date(expirationTime);
 		}
 
 		public void setExpirationDate(Date expirationDate)
 		{
-			this.expirationDate = expirationDate;
+			this.expirationTime = expirationDate.getTime();
 		}
 
-		public boolean isExpired(Date date)
+		public boolean isExpired()
 		{
-			return date.getTime() > expirationDate.getTime();
+			return (expirationTime != null && (new Date()).getTime() > expirationTime);
+		}
+
+		public Long getExpirationTime()
+		{
+			return expirationTime;
+		}
+
+		public void setExpirationTime(long expirationTime)
+		{
+			this.expirationTime = expirationTime;
+		}
+
+		public void setLifeTime(long lifetime)
+		{
+			this.expirationTime = (new Date()).getTime() + lifetime;
 		}
 	}
 }

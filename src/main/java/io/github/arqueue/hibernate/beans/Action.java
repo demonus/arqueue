@@ -1,5 +1,6 @@
 package io.github.arqueue.hibernate.beans;
 
+import io.github.arqueue.common.Result;
 import io.github.arqueue.hibernate.beans.helpers.Countable;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -15,13 +16,14 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Created by root on 10/19/15.
  */
 @Entity
 @Table(name = "qbic_flow_actions", catalog = "queuebic")
-public class Action implements Countable
+public class Action implements Countable, Callable<Result>
 {
 	private String id;
 
@@ -91,5 +93,12 @@ public class Action implements Countable
 	public void setTasks(Set<Task> tasks)
 	{
 		this.tasks = tasks;
+	}
+
+
+	@Override
+	public Result call() throws Exception
+	{
+		return null;
 	}
 }
