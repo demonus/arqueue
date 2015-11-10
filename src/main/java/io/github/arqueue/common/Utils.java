@@ -61,4 +61,27 @@ public class Utils
 
 		return res;
 	}
+
+	public static String buildCacheKey(String... values)
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+
+		boolean first = true;
+
+		for (String value : values)
+		{
+			if (!first)
+			{
+				stringBuilder.append("|");
+			}
+			else
+			{
+				first = false;
+			}
+
+			stringBuilder.append(value);
+		}
+
+		return stringBuilder.toString();
+	}
 }

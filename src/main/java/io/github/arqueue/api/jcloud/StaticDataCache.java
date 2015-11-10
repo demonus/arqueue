@@ -1,5 +1,6 @@
 package io.github.arqueue.api.jcloud;
 
+import io.github.arqueue.common.Configuration;
 import io.github.arqueue.common.KeyValuePair;
 import io.github.arqueue.exception.CacheException;
 import org.apache.log4j.Logger;
@@ -7,13 +8,15 @@ import org.apache.log4j.Logger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by root on 10/23/15.
  */
 public class StaticDataCache
 {
-	private static final int DEFAULT_CAPACITY = 300;
+	public static final int DEFAULT_CAPACITY = 300;
 
 	private static Logger logger = Logger.getLogger(StaticDataCache.class);
 
@@ -21,27 +24,37 @@ public class StaticDataCache
 
 	private CacheNode last = null;
 
-	private Map<String, CacheNode> cacheIndex = new HashMap<>();
+	private Map<String, CacheNode> cacheIndex = new ConcurrentHashMap<>();
 
 	private Long lifetime;
 
 	private int capacity;
 
-	public StaticDataCache(int capacity)
-	{
-		this.capacity = capacity;
-		this.lifetime = null;
-	}
+	private static volatile StaticDataCache instance = null;
 
-	public StaticDataCache(int capacity, long lifetime)
+	ReentrantLock lock = new ReentrantLock(true);
+
+	private StaticDataCache(int capacity, Long lifetime)
 	{
 		this.capacity = capacity;
 		this.lifetime = lifetime;
 	}
 
-	public StaticDataCache()
+	public static StaticDataCache getInstance()
 	{
-		this(DEFAULT_CAPACITY);
+		if (instance == null)
+		{
+			synchronized (StaticDataCache.class)
+			{
+				if (instance == null)
+				{
+					instance = new StaticDataCache(Configuration.getInstance().getCacheCapacity(),
+							Configuration.getInstance().getCacheLifeTime());
+				}
+			}
+		}
+
+		return instance;
 	}
 
 	public int getCapacity()
@@ -61,63 +74,81 @@ public class StaticDataCache
 
 	public <T> void addToCache(String key, T object, Long lifetime) throws CacheException
 	{
-		if (!cacheIndex.containsKey(key))
+		lock.lock();
+
+		try
 		{
-			if (cacheIndex.size() == capacity)
+			if (!cacheIndex.containsKey(key))
 			{
-				if (last != null)
+				if (cacheIndex.size() == capacity)
 				{
-					cacheIndex.remove(last.getKey());
+					if (last != null)
+					{
+						cacheIndex.remove(last.getKey());
 
-					deleteNode(last);
+						deleteNode(last);
+					}
+					else
+					{
+						throw new CacheException("Cache consistency problem " + capacity);
+					}
 				}
-				else
-				{
-					throw new CacheException("Cache consistency problem " + capacity);
-				}
-			}
 
-			CacheNode<T> node = new CacheNode<>(key, object, lifetime);
+				CacheNode<T> node = new CacheNode<>(key, object, lifetime);
 
-			addNode(node);
-
-			cacheIndex.put(key, node);
-		}
-		else
-		{
-			CacheNode<T> node = cacheIndex.get(key);
-
-			if (node != null)
-			{
-				pop(node);
-
-				node.setValue(object);
-
-				node.setLifeTime(lifetime);
+				addNode(node);
 
 				cacheIndex.put(key, node);
 			}
+			else
+			{
+				CacheNode<T> node = cacheIndex.get(key);
+
+				if (node != null)
+				{
+					pop(node);
+
+					node.setValue(object);
+
+					node.setLifeTime(lifetime);
+
+					cacheIndex.put(key, node);
+				}
+			}
+		}
+		finally
+		{
+			lock.unlock();
 		}
 	}
 
 	public <T> T getFromCache(String key)
 	{
-		if (cacheIndex.containsKey(key))
+		lock.lock();
+
+		try
 		{
-			CacheNode<T> node = cacheIndex.get(key);
-
-			if (node != null)
+			if (cacheIndex.containsKey(key))
 			{
-				if (!node.isExpired())
-				{
-					pop(node);
+				CacheNode<T> node = cacheIndex.get(key);
 
-					return node.getValue();
+				if (node != null)
+				{
+					if (!node.isExpired())
+					{
+						pop(node);
+
+						return node.getValue();
+					}
+					else
+					{
+						deleteNode(node);
+
+						return null;
+					}
 				}
 				else
 				{
-					deleteNode(node);
-
 					return null;
 				}
 			}
@@ -126,24 +157,33 @@ public class StaticDataCache
 				return null;
 			}
 		}
-		else
+		finally
 		{
-			return null;
+			lock.unlock();
 		}
 	}
 
 	public void deleteFromCache(String key)
 	{
-		if (cacheIndex.containsKey(key))
+		lock.lock();
+
+		try
 		{
-			CacheNode node = cacheIndex.get(key);
-
-			if (node != null)
+			if (cacheIndex.containsKey(key))
 			{
-				deleteNode(node);
+				CacheNode node = cacheIndex.get(key);
 
-				cacheIndex.remove(key);
+				if (node != null)
+				{
+					deleteNode(node);
+
+					cacheIndex.remove(key);
+				}
 			}
+		}
+		finally
+		{
+			lock.unlock();
 		}
 	}
 
@@ -317,9 +357,16 @@ public class StaticDataCache
 			this.expirationTime = expirationTime;
 		}
 
-		public void setLifeTime(long lifetime)
+		public void setLifeTime(Long lifetime)
 		{
-			this.expirationTime = (new Date()).getTime() + lifetime;
+			if (lifetime != null)
+			{
+				this.expirationTime = (new Date()).getTime() + lifetime;
+			}
+			else
+			{
+				this.expirationTime = null;
+			}
 		}
 	}
 }

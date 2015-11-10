@@ -1,5 +1,6 @@
 package io.github.arqueue.common;
 
+import io.github.arqueue.api.jcloud.StaticDataCache;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -99,6 +100,26 @@ public class Configuration
 	public int getMaxThreads()
 	{
 		return Integer.parseInt(properties.getProperty("max-thread-count", "10"));
+	}
+
+	public int getCacheCapacity()
+	{
+		return Integer
+				.parseInt(properties.getProperty("cache-capacity", String.valueOf(StaticDataCache.DEFAULT_CAPACITY)));
+	}
+
+	public Long getCacheLifeTime()
+	{
+		String cacheLifeTime = properties.getProperty("cache-lifetime");
+
+		if (cacheLifeTime == null || "".equals(cacheLifeTime))
+		{
+			return null;
+		}
+		else
+		{
+			return Long.parseLong(cacheLifeTime);
+		}
 	}
 
 	public int getSchedulerCheckInterval()

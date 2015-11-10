@@ -2,6 +2,7 @@ package io.github.arqueue.api.jcloud;
 
 import com.google.common.io.Closeables;
 import io.github.arqueue.common.Utils;
+import io.github.arqueue.hibernate.beans.User;
 import org.apache.log4j.Logger;
 import org.jclouds.ContextBuilder;
 import org.jclouds.View;
@@ -19,40 +20,29 @@ public class InstanceGenerator
 {
 	private Logger logger = Logger.getLogger(this.getClass());
 
-	private String username;
-
-	private String apiKey;
+	private User user = null;
 
 	private String provider;
 
-	public String getUsername()
+	private volatile ComputeService computeService = null;
+
+	private volatile NovaApi novaApi = null;
+
+	public User getUser()
 	{
-		return username;
+		return user;
 	}
 
-	public void setUsername(String username)
+	public void setUser(User user)
 	{
-		this.username = username;
+		this.user = user;
 	}
 
-	public String getApiKey()
+	public InstanceGenerator(User user)
 	{
-		return apiKey;
-	}
-
-	public void setApiKey(String apiKey)
-	{
-		this.apiKey = apiKey;
-	}
-
-	public InstanceGenerator(String username, String apiKey)
-	{
-		this.username = username;
-		this.apiKey = apiKey;
+		this.user = user;
 
 		this.provider = System.getProperty("provider.cs", "rackspace-cloudservers-us");
-
-		ContextBuilder.newBuilder(provider).credentials(username, apiKey).buildInjector();
 	}
 
 	public <T extends Closeable> T getApiInstance(Class<T> clazz)
@@ -60,7 +50,7 @@ public class InstanceGenerator
 		System.out.println("0");
 		ContextBuilder contextBuilder = ContextBuilder.newBuilder(provider);
 		System.out.println("1");
-		contextBuilder.credentials(username, apiKey);
+		contextBuilder.credentials(user.getUsername(), user.getApiKey());
 		System.out.println("3");
 
 		return contextBuilder.buildApi(clazz);
@@ -68,19 +58,41 @@ public class InstanceGenerator
 
 	public <T extends View> T getViewInstance(Class<T> clazz)
 	{
-		return ContextBuilder.newBuilder(provider).credentials(username, apiKey).buildView(clazz);
+		return ContextBuilder.newBuilder(provider).credentials(user.getUsername(), user.getApiKey()).buildView(clazz);
 	}
 
 	public NovaApi getNovaApiInstance()
 	{
-		return getApiInstance(NovaApi.class);
+		if (novaApi == null)
+		{
+			synchronized (this)
+			{
+				if (novaApi == null)
+				{
+					novaApi = getApiInstance(NovaApi.class);
+				}
+			}
+		}
+
+		return novaApi;
 	}
 
 	public ComputeService getComputeService()
 	{
-		ComputeServiceContext computeServiceContext = getViewInstance(ComputeServiceContext.class);
+		if (computeService == null)
+		{
+			synchronized (this)
+			{
+				if (computeService == null)
+				{
+					ComputeServiceContext computeServiceContext = getViewInstance(ComputeServiceContext.class);
 
-		return computeServiceContext.getComputeService();
+					computeService = computeServiceContext.getComputeService();
+				}
+			}
+		}
+
+		return computeService;
 	}
 
 	public void close(Closeable... closeables)
