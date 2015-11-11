@@ -1,6 +1,8 @@
 package io.github.arqueue.common;
 
+import io.github.arqueue.hibernate.SessionFactory;
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -28,6 +30,14 @@ public class Utils
 					else if (resource instanceof Writer)
 					{
 						((Writer) resource).close();
+					}
+					else if (resource instanceof Session)
+					{
+						((Session) resource).close();
+					}
+					else if (resource instanceof SessionFactory)
+					{
+						((SessionFactory) resource).close();
 					}
 				}
 				catch (Exception ex)

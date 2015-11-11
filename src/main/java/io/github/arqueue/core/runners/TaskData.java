@@ -1,5 +1,13 @@
 package io.github.arqueue.core.runners;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.github.arqueue.api.jcloud.JCloudBuildable;
+import io.github.arqueue.api.jcloud.JCloudServer;
+import io.github.arqueue.api.jcloud.JCloudUtils;
+import io.github.arqueue.hibernate.beans.Task;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +19,8 @@ public class TaskData
 	private String type;
 
 	private String id;
+
+	private JCloudBuildable node;
 
 	private HashMap<String, String> properties;
 
@@ -34,6 +44,14 @@ public class TaskData
 		this.properties = properties;
 	}
 
+	public TaskData(String type, String id, JCloudBuildable node, HashMap<String, String> properties)
+	{
+		this.type = type;
+		this.id = id;
+		this.node = node;
+		this.properties = properties;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -49,5 +67,57 @@ public class TaskData
 		}
 
 		return stringBuilder.toString();
+	}
+
+	public static TaskData parse(Task task)
+	{
+		String json = task.getData();
+
+		JsonParser parser = new JsonParser();
+
+		JsonObject object = (JsonObject) parser.parse(json);
+
+		String id = object.get("id").getAsString();
+
+		String type = object.get("type").getAsString();
+
+		JCloudBuildable buildable = null;
+
+		if ("SERVER".equalsIgnoreCase(type))
+		{
+			buildable = JCloudUtils.parse(object.get("server"), JCloudServer.class);
+		}
+
+		JsonElement propertiesElement = object.get("properties");
+
+		HashMap<String, String> properties;
+
+		if (propertiesElement != null)
+		{
+			JsonObject propObject = propertiesElement.getAsJsonObject();
+
+			properties = new HashMap<>(propObject.entrySet().size());
+
+			for (Map.Entry<String, JsonElement> entry : propObject.entrySet())
+			{
+				properties.put(entry.getKey(), entry.getValue().getAsString());
+			}
+		}
+		else
+		{
+			properties = new HashMap<>();
+		}
+
+		return new TaskData(id, type, buildable, properties);
+	}
+
+	public JCloudBuildable getNode()
+	{
+		return node;
+	}
+
+	public void setNode(JCloudBuildable node)
+	{
+		this.node = node;
 	}
 }
