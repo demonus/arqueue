@@ -104,7 +104,12 @@ public class JCloudUtils
 		return images;
 	}
 
-	public static <T extends JCloudBuildable> T parse(JsonElement json, Class<T> clazz)
+	public static <T> T parse(JsonElement json, Class<T> clazz)
+	{
+		return gson.fromJson(json, clazz);
+	}
+
+	public static <T> T parse(String json, Class<T> clazz)
 	{
 		return gson.fromJson(json, clazz);
 	}

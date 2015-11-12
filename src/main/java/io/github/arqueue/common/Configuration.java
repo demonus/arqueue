@@ -127,6 +127,11 @@ public class Configuration
 		return Integer.parseInt(properties.getProperty("check-interval-seconds", "10")) * 1000;
 	}
 
+	public String getOpenStackIdentityUrl()
+	{
+		return properties.getProperty("openstack.identity-url", "https://identity.api.rackspacecloud.com/v2.0/tokens");
+	}
+
 	public Properties getSubset(String prefix)
 	{
 		Properties res = new Properties();
