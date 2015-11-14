@@ -1,5 +1,7 @@
 package io.github.arqueue.common;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import io.github.arqueue.hibernate.SessionFactory;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -13,6 +15,13 @@ import java.io.Writer;
 public class Utils
 {
 	private static Logger logger = Logger.getLogger(Utils.class);
+
+	private static Gson gson;
+
+	static
+	{
+		gson = new Gson();
+	}
 
 
 	public static void closeResources(Object... resources)
@@ -93,5 +102,20 @@ public class Utils
 		}
 
 		return stringBuilder.toString();
+	}
+
+	public static <T> T parse(JsonElement json, Class<T> clazz)
+	{
+		return gson.fromJson(json, clazz);
+	}
+
+	public static <T> T parse(String json, Class<T> clazz)
+	{
+		return gson.fromJson(json, clazz);
+	}
+
+	public static <T extends JsonElement> T toJsonElement(Object object)
+	{
+		return (T) gson.toJsonTree(object);
 	}
 }

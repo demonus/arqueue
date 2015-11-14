@@ -1,4 +1,4 @@
-package io.github.arqueue.api.beans.flavors;
+package io.github.arqueue.api.beans.get.flavor;
 
 import java.util.Set;
 

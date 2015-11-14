@@ -1,4 +1,4 @@
-package io.github.arqueue.api.beans.servers;
+package io.github.arqueue.api.beans.get.server;
 
 /**
  * Created by root on 10/14/15.

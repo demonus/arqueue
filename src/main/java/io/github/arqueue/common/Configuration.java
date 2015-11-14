@@ -1,6 +1,5 @@
 package io.github.arqueue.common;
 
-import io.github.arqueue.api.jcloud.StaticDataCache;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;

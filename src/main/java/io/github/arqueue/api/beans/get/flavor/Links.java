@@ -1,4 +1,4 @@
-package io.github.arqueue.api.beans.flavors;
+package io.github.arqueue.api.beans.get.flavor;
 
 /**
  * Created by root on 11/11/15.

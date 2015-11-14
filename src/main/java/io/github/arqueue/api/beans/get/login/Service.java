@@ -1,4 +1,4 @@
-package io.github.arqueue.api.beans.users;
+package io.github.arqueue.api.beans.get.login;
 
 import java.util.Set;
 

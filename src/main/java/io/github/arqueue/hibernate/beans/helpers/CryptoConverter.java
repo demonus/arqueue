@@ -1,7 +1,6 @@
 package io.github.arqueue.hibernate.beans.helpers;
 
 import io.github.arqueue.common.Configuration;
-import net.schmizz.sshj.common.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -9,6 +8,7 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * Created by root on 10/26/15.
@@ -35,7 +35,7 @@ public class CryptoConverter implements AttributeConverter<String, String>
 			Cipher c = Cipher.getInstance(ALGORITHM);
 			c.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-			return Base64.encodeBytes(c.doFinal(ccNumber.getBytes()));
+			return Base64.getEncoder().encodeToString(c.doFinal(ccNumber.getBytes()));
 		}
 		catch (Exception e)
 		{
@@ -60,7 +60,7 @@ public class CryptoConverter implements AttributeConverter<String, String>
 			Cipher c = Cipher.getInstance(ALGORITHM);
 			c.init(Cipher.DECRYPT_MODE, secretKeySpec);
 
-			return new String(c.doFinal(Base64.decode(dbData)));
+			return new String(c.doFinal(Base64.getDecoder().decode(dbData)));
 		}
 		catch (Exception e)
 		{

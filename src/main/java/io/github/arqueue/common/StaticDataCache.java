@@ -1,12 +1,9 @@
-package io.github.arqueue.api.jcloud;
+package io.github.arqueue.common;
 
-import io.github.arqueue.common.Configuration;
-import io.github.arqueue.common.KeyValuePair;
 import io.github.arqueue.exception.CacheException;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;

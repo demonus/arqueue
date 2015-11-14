@@ -3,9 +3,8 @@ package io.github.arqueue.core.runners;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.github.arqueue.api.jcloud.JCloudBuildable;
-import io.github.arqueue.api.jcloud.JCloudServer;
-import io.github.arqueue.api.jcloud.JCloudUtils;
+import io.github.arqueue.api.beans.post.request.server.ServerRequest;
+import io.github.arqueue.common.Utils;
 import io.github.arqueue.hibernate.beans.Task;
 
 import java.util.HashMap;
@@ -20,7 +19,7 @@ public class TaskData
 
 	private String id;
 
-	private JCloudBuildable node;
+	private Buildable node;
 
 	private HashMap<String, String> properties;
 
@@ -44,7 +43,7 @@ public class TaskData
 		this.properties = properties;
 	}
 
-	public TaskData(String type, String id, JCloudBuildable node, HashMap<String, String> properties)
+	public TaskData(String type, String id, Buildable node, HashMap<String, String> properties)
 	{
 		this.type = type;
 		this.id = id;
@@ -81,11 +80,11 @@ public class TaskData
 
 		String type = object.get("type").getAsString();
 
-		JCloudBuildable buildable = null;
+		Buildable buildable = null;
 
 		if ("SERVER".equalsIgnoreCase(type))
 		{
-			buildable = JCloudUtils.parse(object.get("server"), JCloudServer.class);
+			buildable = Utils.parse(object.get("server"), ServerRequest.class);
 		}
 
 		JsonElement propertiesElement = object.get("properties");
@@ -111,12 +110,12 @@ public class TaskData
 		return new TaskData(id, type, buildable, properties);
 	}
 
-	public JCloudBuildable getNode()
+	public Buildable getNode()
 	{
 		return node;
 	}
 
-	public void setNode(JCloudBuildable node)
+	public void setNode(Buildable node)
 	{
 		this.node = node;
 	}

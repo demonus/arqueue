@@ -1,8 +1,7 @@
-package io.github.arqueue.api.beans.users;
+package io.github.arqueue.api.beans.get.login;
 
 import com.google.gson.annotations.SerializedName;
 
-import javax.xml.bind.annotation.XmlElement;
 import java.util.Set;
 
 /**
