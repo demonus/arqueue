@@ -1,9 +1,5 @@
 package io.github.arqueue.hibernate.beans;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.github.arqueue.core.runners.TaskData;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;

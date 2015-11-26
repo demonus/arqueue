@@ -11,6 +11,7 @@ import io.github.arqueue.api.beans.get.server.ServerDetailsArrayResponse;
 import io.github.arqueue.api.beans.post.request.server.ServerRequest;
 import io.github.arqueue.api.post.response.server.ServerResponse;
 import io.github.arqueue.common.Configuration;
+import io.github.arqueue.common.RequestBuilder;
 import io.github.arqueue.common.Utils;
 import io.github.arqueue.exception.AuthenticationException;
 import io.github.arqueue.exception.OpenStackApiException;
@@ -35,6 +36,7 @@ import java.util.Map;
  * <p>
  * Uses GSon to marshall/unmarshall JSON beans.
  * <p>
+ *
  * @author Dmitriy Bannikov
  */
 public class OpenStackConnection
@@ -52,6 +54,14 @@ public class OpenStackConnection
 	private String defaultRegion;
 
 	private Map<String, Map<String, Endpoint>> targets = new HashMap<>();
+
+	public enum HttpMethod
+	{
+		GET,
+		POST,
+		DELETE,
+		PUT;
+	}
 
 	public OpenStackConnection()
 	{
@@ -157,8 +167,9 @@ public class OpenStackConnection
 
 		jsonObject.add("server", Utils.toJsonElement(serverRequest));
 
-		return submitRequest(ServerResponse.class, null, null, jsonObject.toString(),
-				OpenStackConnection.ALIAS_SERVER, region, true, "servers");
+		return submitRequest(ServerResponse.class,
+				(new RequestBuilder(region)).entity(jsonObject.toString()).alias(OpenStackConnection.ALIAS_SERVER)
+						.method(HttpMethod.POST).path("servers"));
 	}
 
 	/**
@@ -186,10 +197,9 @@ public class OpenStackConnection
 		checkStatus();
 
 		ServerDetailsArrayResponse serverDetailsArrayResponse =
-				submitRequest(ServerDetailsArrayResponse.class, null, null, null, OpenStackConnection.ALIAS_SERVER,
-						region,
-						false,
-						"servers", "detail");
+				submitRequest(ServerDetailsArrayResponse.class,
+						(new RequestBuilder(region)).alias(OpenStackConnection.ALIAS_SERVER).path("servers")
+								.path("detail"));
 
 		return serverDetailsArrayResponse;
 	}
@@ -217,8 +227,8 @@ public class OpenStackConnection
 	public Flavors listFlavors(String region) throws OpenStackApiException, ValidationException
 	{
 		Flavors flavors =
-				submitRequest(Flavors.class, null, null, null, OpenStackConnection.ALIAS_SERVER, region, false,
-						"flavors");
+				submitRequest(Flavors.class,
+						(new RequestBuilder(region)).alias(OpenStackConnection.ALIAS_SERVER).path("flavors"));
 
 		return flavors;
 	}
@@ -226,62 +236,53 @@ public class OpenStackConnection
 	/**
 	 * Get and endpoint URL
 	 *
-	 * @param alias  endpoint alias
-	 * @param region endpoint region
+	 * @param requestBuilder request parameters
 	 * @return a public URL of the endpoint
 	 * @throws ValidationException endpoint not found
 	 */
-	private String getUrl(String alias, String region) throws ValidationException
+	private String getUrl(RequestBuilder requestBuilder) throws ValidationException
 	{
-		if (targets.containsKey(alias))
+		if (targets.containsKey(requestBuilder.getAlias()))
 		{
-			Map<String, Endpoint> links = targets.get(alias);
+			Map<String, Endpoint> links = targets.get(requestBuilder.getAlias());
 
-			if (links.containsKey(region))
+			if (links.containsKey(requestBuilder.getRegion()))
 			{
-				return links.get(region).getPublicURL();
+				return links.get(requestBuilder.getRegion()).getPublicURL();
 			}
 		}
 
 		throw new ValidationException(
-				"Endpoint public URL not found for given alias/region: " + alias + "/" + region);
+				"Endpoint public URL not found for given request: " + requestBuilder);
 	}
 
 
 	/**
 	 * Submit a REST request, gets the result, and maps it into a Java class
 	 *
-	 * @param clazz           return class name
-	 * @param headers         a map of headers (token is added by default)
-	 * @param params          a map of query string/form parameters
-	 * @param body            request entity
-	 * @param targetAlias     endpoint alias
-	 * @param region          endpoint region
-	 * @param post            use HTTP POST method
-	 * @param uriPathElements URI parts
-	 * @param <T>             return type
+	 * @param clazz          return class name
+	 * @param requestBuilder request parameters
+	 * @param <T>            return type
 	 * @return an instance of T
 	 * @throws OpenStackApiException communication failed
 	 * @throws ValidationException   endpoint not found
 	 */
-	private <T> T submitRequest(Class<T> clazz, Map<String, String> headers, Map<String, String> params, String body,
-								String targetAlias,
-								String region, boolean post, String... uriPathElements)
+	private <T> T submitRequest(Class<T> clazz, RequestBuilder requestBuilder)
 			throws OpenStackApiException, ValidationException
 	{
-		Invocation.Builder request = getRequest(headers, post ? null : params, targetAlias, region, uriPathElements);
+		Invocation.Builder request = getRequest(requestBuilder);
 
 		Response response;
 
-		if (body != null && post)
+		if (requestBuilder.isEntityBased())
 		{
-			response = request.post(Entity.json(body));
+			response = request.post(Entity.json(requestBuilder.getEntity()));
 		}
-		else if (post)
+		else if (Utils.in(requestBuilder.getMethod(), HttpMethod.POST, HttpMethod.PUT))
 		{
 			Form form = new Form();
 
-			for (Map.Entry<String, String> entry : params.entrySet())
+			for (Map.Entry<String, String> entry : requestBuilder.getParameters().entrySet())
 			{
 				form.param(entry.getKey(), entry.getValue());
 			}
@@ -369,54 +370,45 @@ public class OpenStackConnection
 	 */
 	public Images listImages(String region) throws OpenStackApiException, ValidationException
 	{
-		return submitRequest(Images.class, null, null, null, OpenStackConnection.ALIAS_SERVER, region, false, "images",
-				"detail");
+		return submitRequest(Images.class, (new RequestBuilder(region)).alias(OpenStackConnection.ALIAS_SERVER).path
+				("images").path("detail"));
 	}
 
 	/**
 	 * Prepare a REST request, gets the result, and maps it into a Java class
 	 *
-	 * @param headers         a map of headers (token is added by default)
-	 * @param params          a map of query string/form parameters
-	 * @param targetAlias     endpoint alias
-	 * @param region          endpoint region
-	 * @param uriPathElements URI parts
+	 * @param requestBuilder request parameters
 	 * @return Jax-RS request builder
 	 * @throws ValidationException endpoint not found
 	 */
-	private Invocation.Builder getRequest(Map<String, String> headers, Map<String, String> params,
-										  String targetAlias,
-										  String region, String... uriPathElements) throws ValidationException
+	private Invocation.Builder getRequest(RequestBuilder requestBuilder) throws ValidationException
 	{
 		checkStatus();
 
-		if (region == null)
+		if (requestBuilder.getRegion() == null)
 		{
-			region = defaultRegion;
+			requestBuilder.region(defaultRegion);
 		}
 
-		String url = getUrl(targetAlias, (region == null) ? defaultRegion : region);
+		String url = getUrl(requestBuilder);
 
 		WebTarget target = client.target(url);
 
-		for (String uriPathElement : uriPathElements)
+		for (String uriPathElement : requestBuilder.getPaths())
 		{
 			target = target.path(uriPathElement);
 		}
 
 		Invocation.Builder request = target.request(MediaType.APPLICATION_JSON_TYPE).header("X-Auth-Token", token);
 
-		if (headers != null)
+		for (Map.Entry<String, String> header : requestBuilder.getHeaders().entrySet())
 		{
-			for (Map.Entry<String, String> header : headers.entrySet())
-			{
-				request.header(header.getKey(), header.getValue());
-			}
+			request.header(header.getKey(), header.getValue());
 		}
 
-		if (params != null)
+		if (!requestBuilder.isEntityBased())
 		{
-			for (Map.Entry<String, String> param : params.entrySet())
+			for (Map.Entry<String, String> param : requestBuilder.getParameters().entrySet())
 			{
 				request.property(param.getKey(), param.getValue());
 			}

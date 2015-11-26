@@ -8,6 +8,8 @@ import org.hibernate.Session;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by root on 10/16/15.
@@ -117,5 +119,76 @@ public class Utils
 	public static <T extends JsonElement> T toJsonElement(Object object)
 	{
 		return (T) gson.toJsonTree(object);
+	}
+
+	public static String mapToString(Map<String, String> map)
+	{
+		if (map == null)
+		{
+			return null;
+		}
+		else
+		{
+			boolean first = true;
+			StringBuilder builder = new StringBuilder();
+
+			for (Map.Entry<String, String> entry : map.entrySet())
+			{
+				if (!first)
+				{
+					builder.append(", ");
+				}
+				else
+				{
+					first = false;
+				}
+
+				builder.append(entry.getKey()).append(" = ").append(entry.getValue());
+			}
+
+			return builder.toString();
+		}
+	}
+
+	public static String collectionToString(Collection<String> collection)
+	{
+		if (collection == null)
+		{
+			return null;
+		}
+		else
+		{
+			boolean first = true;
+			StringBuilder builder = new StringBuilder();
+
+			for (String entry : collection)
+			{
+				if (!first)
+				{
+					builder.append(", ");
+				}
+				else
+				{
+					first = false;
+				}
+
+				builder.append(entry);
+			}
+
+			return builder.toString();
+		}
+	}
+
+	public static <T> boolean in(T element, T... values)
+	{
+		for (T value : values)
+		{
+			if ((element == null && value == null) || (value != null && value.equals(element)))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
